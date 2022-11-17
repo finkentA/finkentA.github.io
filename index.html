@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <title></title>
+  
+
+  <script src="source/vega@5.22.1"></script>
+  <script src="source/vega-lite@5.6.0"></script>
+  <script src="source/vega-embed@6.21.0"></script>
+
+</head>
+<body>
+  <p> <h1> * Stranger Things (Netflix) </h1>
+
+    Stranger Things is a Netflix series, which can be classified as science fiction fantasy horror. It was created by the Duffer Brothers, who are also the showrunners executive producers (together with Shawn Levy and Dan Cohen).
+    
+    The first season of the series was released on Netflix on July 15, 2016, with the second, third, and fourth seasons following in October 2017, July 2019, and May and July 2022, respectively.
+    
+    The data used in this analysis comes from The data this week comes from 8flix and it was prepped by Dan Fellowes and Jonathan Kitt.
+    <div id="characters" style="display:block"> </div>
+    <h2> * Stage Direction</h2>
+    
+    This analysis makes use of the words in the stage direction column, which includes instructions indicating movement, position, or tone of an actor, or sound effects.
+    
+    Mention of characters were extracted from the stage direction text, with the goal of identifying which characters are more active in the series.
+    
+    As seen in the bar plot below, Dustin is the character that is most active across all seasons, followed by Mike and Joyce. Billy is the character least activite in all four seasons of the Netflix show.
+    
+    Divided by each season, we see that Mike is the most active character in Season 1, while Eleven is the least active character.
+    
+    Dustin gains prominence in the second season. For season 3, Steve, Mike and Robin are the most active characters.
+    
+    For the fourth season, Eleven is the most active character.</p>
+   <br> 
+  <div id="characters_per_season"></div>
+  
+  <script src="source/characters.js"></script>
+  <script src="source/characters_per_season.js"> </script>
+
+  
+
+
+</body></html>
