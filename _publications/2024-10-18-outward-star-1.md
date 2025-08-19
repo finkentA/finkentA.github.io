@@ -6,9 +6,9 @@ permalink: /publication/2024-10-18-outward-star-1
 excerpt: 'This paper is about forming the idea of an outward star and applying an algorithm for scalar fields.'
 date: 2024-10-18
 venue: 'IEEE Vis 2024'
-slidesurl: 'http://academicpages.github.io/files/osa_slides.pdf'
-paperurl: 'http://academicpages.github.io/files/OSA_paper.pdf'
-bibtexurl: 'http://academicpages.github.io/files/osa_bibtex.bib'
+slidesurl: 'http://finkenta.github.io/files/osa_slides.pdf'
+paperurl: 'http://finkenta.github.io/files/OSA_paper.pdf'
+bibtexurl: 'http://finkenta.github.io/files/osa_bibtex.bib'
 citation: 'Finken, Tanner. (2024). &quot;Localized Evaluation for Constructing Discrete Vector Fields.&quot; <i>IEEE Vis 2024</i>.'
 ---
 
