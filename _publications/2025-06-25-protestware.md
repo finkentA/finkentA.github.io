@@ -6,9 +6,9 @@ permalink: /publication/2025-06-25-protestware
 excerpt: 'This paper is about collecting and analyzing a new type of software called Protestware.'
 date: 2025-06-25
 venue: 'FSE 2025'
-slidesurl: 'http://academicpages.github.io/files/protestware_slides.pdf'
-paperurl: 'http://academicpages.github.io/files/Protestware_paper.pdf'
-bibtexurl: 'http://academicpages.github.io/files/protestware_bibtex.bib'
+slidesurl: 'http://finkenta.github.io/files/protestware_slides.pdf'
+paperurl: 'http://finkenta.github.io/files/Protestware_paper.pdf'
+bibtexurl: 'http://finkenta.github.io/files/protestware_bibtex.bib'
 citation: 'Finken, Tanner et al. (2025). &quot;On the Characteristics and Impacts of Protestware Libraries.&quot; <i>FSE 2025</i>.'
 ---
 
