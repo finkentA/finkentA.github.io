@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Interactive Triangle with Movable Vertices and Adjustable Vectors</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .vertex { cursor: pointer; }
+        .arrow { stroke: #e74c3c; stroke-width: 2; fill: none; }
+        .break-arrow { stroke: #274c3c; stroke-width: 4; fill: none; }
+        .arrowhead-circ { fill: #e74c3c; cursor: pointer; }
+        .breakpoint { fill: #ff5722; } /* Orange color for breakpoints */
+        canvas {
+			z-index: -1; /* Places canvas behind SVG */
+			position: absolute;
+		}
+
+		svg {
+			position: relative;
+			z-index: 1; /* Places SVG elements in front */
+		}
+    </style>
+</head>
+<body>
+<h1> Interactive Triangle and Vectors  </h1>
+Color comparison based on adding an edge at that point compared to all vertices. If multiple vertices work at that point it is colored according to adding the primary colors together (i.e., black doesn't work for any vertex and white works for all vertices).  <br/>
+Update: Gray is now added to any white spots that don't fit the criteria for all the breakpoints as well. You can also click in the triangle to see the interpolated vector at that location (it doesn't update and needs to be cleared with the clear button in the top left).
+<br/>
+    <div id="critical-point-status">Critical Point: Unknown</div>
+    <br/>
+<svg width="1200" height="1200"></svg>
+
+<script>
+    
+    const svg = d3.select("svg");
+    const width = +svg.attr("width");
+    const height = +svg.attr("height");
+    
+     // Create a canvas for pixel-based coloring
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    canvas.width = width;
+    canvas.height = height;
+    document.body.appendChild(canvas);
+    
+    // Append the canvas to an SVG foreignObject, allowing it to display within the SVG
+    svg.append("foreignObject")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("x", 0)
+        .attr("y", 0)
+        .append(() => canvas);
+
+    // Initial vertex and vector data
+    const vertices = [
+        { x: width / 2, y: 100, vx: 30, vy: -20, color:"red"},
+        { x: width / 3, y: 400, vx: 30, vy: 40 , color: "yellow"},
+        { x: 2 * width / 3, y: 400, vx: -30, vy: 40 , color: "blue"}
+    ];
+    let breakpoints = [];
+    const vertexColors = ["red", "yellow", "blue"];
+    var circleVertices = JSON.parse(JSON.stringify(vertices))
+	circleVertices.push(vertices[0]);
+
+    // Draw the triangle connecting vertices
+    const line = d3.line().x(d => d.x).y(d => d.y);
+    const triangle = svg.append("path").attr("class", "triangle")
+        .attr("d", line(circleVertices))
+        .style("fill", "none").style("stroke", "#34495e").style("stroke-width", 2);
+        
+	// Create a group for break points
+	const breakPointsGroup = svg.append("g");
+        
+   // Group to hold interpolated vectors
+	const interpolatedVectorsGroup = svg.append("g").attr("class", "interpolated-vectors");
+
+    function addInterpolatedVector(x, y) {
+		const interpolatedVector = interpolateVector({x, y} , vertices);
+
+		// Add a line to represent the vector with an arrowhead
+		interpolatedVectorsGroup.append("line")
+		    .attr("x1", x)
+		    .attr("y1", y)
+		    .attr("x2", x + interpolatedVector.vx)
+		    .attr("y2", y + interpolatedVector.vy)
+		    .attr("stroke", "violet")
+		    .attr("stroke-width", 2)
+		    .attr("marker-end", "url(#arrowhead)");  // Reuse the arrowhead marker
+	}
+	
+	// Detect clicks inside the triangle
+svg.on("click", function(event) {
+    const [mouseX, mouseY] = d3.pointer(event);
+
+    // Check if the click is inside the triangle
+    if (isPointInTriangle(mouseX, mouseY, vertices)) {
+        addInterpolatedVector(mouseX, mouseY);
+    }
+});
+
+// Step 4: Add the Clear Button
+
+// Create a button element and style it
+const clearButton = d3.select("body").append("button")
+    .text("Clear Vectors")
+    .style("position", "absolute")
+    .style("top", "10px")
+    .style("left", "10px");
+
+// Clear all displayed interpolated vectors when button is clicked
+clearButton.on("click", () => {
+    interpolatedVectorsGroup.selectAll("line").remove();
+});
+    
+        
+    // Calculate color for each pixel based on the given computation
+    function updateColors() {
+        // Clear canvas
+        context.clearRect(0, 0, width, height);
+
+        // Compute color at each pixel
+        for (let x = 0; x < width; x++) {
+            for (let y = 0; y < height; y++) {
+                if (isPointInTriangle(x, y, vertices)) {
+                    const f = interpolateVector({ x, y }, vertices);
+                    const dotProduct00 = (x - vertices[0].x) * f.vx + (y - vertices[0].y) * f.vy;
+                    const dotProduct01 = (x - vertices[0].x) * vertices[0].vx + (y - vertices[0].y) * vertices[0].vy;
+                    const dotProduct10 = (x - vertices[1].x) * f.vx + (y - vertices[1].y) * f.vy;
+                    const dotProduct11 = (x - vertices[1].x) * vertices[1].vx + (y - vertices[1].y) * vertices[1].vy;
+                    const dotProduct20 = (x - vertices[2].x) * f.vx + (y - vertices[2].y) * f.vy;
+                    const dotProduct21 = (x - vertices[2].x) * vertices[2].vx + (y - vertices[2].y) * vertices[2].vy;
+                    const d0 = dotProduct00 * dotProduct01;
+                    const d1 = dotProduct10 * dotProduct11;
+                    const d2 = dotProduct20 * dotProduct21;
+                    var color = "black";
+                    if (d0>0 && d1<0 && d2<0) {
+                    	color = "red";
+                    } else if (d0<0 && d1>0 && d2<0) {
+                    	color = "yellow";
+                    } else if (d0<0 && d1<0 && d2>0) {
+                    	color = "blue";
+                    }else if (d0>0 && d1>0 && d2<0) {
+                    	color = "orange";
+                    }else if (d0>0 && d1<0 && d2>0) {
+                    	color = "purple";
+                    }else if (d0<0 && d1>0 && d2>0) {
+                    	color = "green";
+                    }else if (d0>0 && d1>0 && d2>0) {
+                    	color = "white";
+                    	//Check with breakpoints
+		                for(let b=0; b<breakpoints.length; b++) {
+		                	const bDot0 = (x - breakpoints[b].x) * f.vx + (y - breakpoints[b].y) * f.vy;
+		                	const bDot1 = (x - breakpoints[b].x) * breakpoints[b].vx + (y - breakpoints[b].y) * breakpoints[b].vy;
+		                	if (bDot0*bDot1 < 0) {
+		                		color = "gray";
+		                	}
+		                }
+                    }
+                    
+                    context.fillStyle = color;
+                    context.fillRect(x, y, 1, 1);
+                }
+            }
+        }
+    }
+        
+   function isCriticalPointInTriangle([v0, v1, v2]) {
+        const sign = (p1, p2, p3) => (p1.vx - p3.vx) * (p2.vy - p3.vy) - (p2.vx - p3.vx) * (p1.vy - p3.vy);
+        const d1 = sign({ vx: 0, vy: 0 }, v0, v1);
+        const d2 = sign({ vx: 0, vy: 0 }, v1, v2);
+        const d3 = sign({ vx: 0, vy: 0 }, v2, v0);
+        const criticalPointExists = (d1 < 0 && d2 < 0 && d3 < 0) || (d1 > 0 && d2 > 0 && d3 > 0);
+        document.getElementById("critical-point-status").textContent =
+                "Critical Point: " + (criticalPointExists ? "Exists" : "Does Not Exist");
+    }
+    
+
+
+    // Check if a point is inside the triangle
+    function isPointInTriangle(px, py, [v0, v1, v2]) {
+        const sign = (p1, p2, p3) => (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+        const d1 = sign({ x: px, y: py }, v0, v1);
+        const d2 = sign({ x: px, y: py }, v1, v2);
+        const d3 = sign({ x: px, y: py }, v2, v0);
+        return (d1 < 0 && d2 < 0 && d3 < 0) || (d1 > 0 && d2 > 0 && d3 > 0);
+    }
+
+    // Interpolate the vector at a point inside the triangle
+    function interpolateVector(p, [v0, v1, v2]) {
+        // Barycentric coordinates
+        const denominator = (v1.y - v2.y) * (v0.x - v2.x) + (v2.x - v1.x) * (v0.y - v2.y);
+        const a = ((v1.y - v2.y) * (p.x - v2.x) + (v2.x - v1.x) * (p.y - v2.y)) / denominator;
+        const b = ((v2.y - v0.y) * (p.x - v2.x) + (v0.x - v2.x) * (p.y - v2.y)) / denominator;
+        const c = 1 - a - b;
+
+        // Interpolated vector
+        return {
+            vx: a * v0.vx + b * v1.vx + c * v2.vx,
+            vy: a * v0.vy + b * v1.vy + c * v2.vy
+        };
+    }
+    
+    function calculateBreakPoints() {
+        breakPointsGroup.selectAll(".breakpoint").remove();
+        breakPointsGroup.selectAll(".break-arrow").remove();
+        breakpoints = [];
+
+        // Loop through each edge of the triangle
+        for (let i = 0; i < 3; i++) {
+            const v1 = vertices[i];
+            const v2 = vertices[(i + 1) % 3];
+
+            // Edge direction vector
+            const edgeDir = { x: v2.x - v1.x, y: v2.y - v1.y };
+            const edgeLength = Math.sqrt(edgeDir.x ** 2 + edgeDir.y ** 2);
+
+            // Normalize edge direction
+            const normEdgeDir = { x: edgeDir.x / edgeLength, y: edgeDir.y / edgeLength };
+
+            // Orthogonal direction vector to edge
+            const orthoDir = { x: -normEdgeDir.y, y: normEdgeDir.x };
+
+            // Vectors at the vertices of the edge
+            const vector1 = { vx: v1.vx, vy: v1.vy };
+            const vector2 = { vx: v2.vx, vy: v2.vy };
+
+            // Linear interpolation for breakpoint calculation
+            const tBreak = calculateBreakpoint(vector1, vector2, normEdgeDir);
+
+            // If t is within [0, 1], the breakpoint lies on the edge
+            if (tBreak >= 0 && tBreak <= 1) {
+                const breakPointX = v1.x + tBreak * (v2.x - v1.x);
+                const breakPointY = v1.y + tBreak * (v2.y - v1.y);
+                const vectorX = vector1.vx + tBreak * (vector2.vx - vector1.vx);
+                const vectorY = vector1.vy + tBreak * (vector2.vy - vector1.vy);
+				const vertexData = { x: breakPointX, y: breakPointY, vx: vectorX, vy: vectorY};
+				breakpoints.push(vertexData);
+                breakPointsGroup.append("rect")
+                    .attr("class", "breakpoint")
+                    .attr("x", breakPointX - 8)
+                    .attr("y", breakPointY - 8)
+                    .attr("width", 16)
+                    .attr("height", 16);
+                
+                breakPointsGroup.append("line")
+					.attr("class", "break-arrow")
+					.attr("x1", breakPointX)
+					.attr("y1", breakPointY)
+					.attr("x2", breakPointX + vectorX)
+					.attr("y2", breakPointY + vectorY)
+					.attr("marker-end", "url(#arrowhead)");
+            }
+        }
+    }
+
+    // Calculate breakpoint based on linear interpolation
+    function calculateBreakpoint(vector1, vector2, edgeDir) {
+        const vxDiff = vector2.vx - vector1.vx;
+        const vyDiff = vector2.vy - vector1.vy;
+
+        const dotProductNumerator = vector1.vx * edgeDir.x + vector1.vy * edgeDir.y;
+        const dotProductDenominator = vxDiff * edgeDir.x + vyDiff * edgeDir.y;
+
+        if (Math.abs(dotProductDenominator) < 1e-5) return -1; // No breakpoint if lines are parallel
+
+        return -dotProductNumerator / dotProductDenominator;
+    }
+
+    // Create vertices as circles
+    const circles = svg.selectAll(".vertex")
+        .data(vertices).enter()
+        .append("circle")
+        .attr("class", "vertex")
+        .attr("r", 8)
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("fill", d => d.color)
+        .call(d3.drag()
+            .on("drag", onVertexDrag)
+            .on("end", updateTriangle));
+    //Adjust vector drag functionality to be at location instead of 0
+    // Add a global variable to track the initial drag offset
+	let dragOffset = { x: 0, y: 0 };
+	
+	// Modify the onArrowheadDrag function to use the offset
+	function onArrowheadDragStart(event, d) {
+		// Calculate initial offset between mouse position and current arrowhead location
+		dragOffset.x = d.vx - (event.x - d.x);
+		dragOffset.y = d.vy - (event.y - d.y);
+	}
+
+    // Add arrows for vectors
+    const arrows = svg.selectAll(".arrow")
+        .data(vertices).enter()
+        .append("line")
+        .attr("class", "arrow")
+        .attr("x1", d => d.x)
+        .attr("y1", d => d.y)
+        .attr("x2", d => d.x + d.vx)
+        .attr("y2", d => d.y + d.vy)
+        .attr("marker-end", "url(#arrowhead)");
+
+    // Define arrowhead
+    svg.append("defs").append("marker")
+        .attr("id", "arrowhead")
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 8)
+        .attr("refY", 0)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("path")
+        .attr("d", "M0,-5L10,0L0,5")
+        .attr("class", "arrowhead")
+        .attr("fill", "black")               // Fill color of arrowhead
+		.attr("stroke", "white")             // Outline color
+		.attr("stroke-width", 1.5);          // Outline thickness
+
+    // Add draggable arrowheads
+    const arrowheads = svg.selectAll(".arrowhead-circle")
+        .data(vertices).enter()
+        .append("circle")
+        .attr("class", "arrowhead-circ")
+        .attr("r", 5)
+        .attr("cx", d => d.x + d.vx)
+        .attr("cy", d => d.y + d.vy)
+        .call(d3.drag()
+        		.on("start", onArrowheadDragStart)
+                .on("drag", onArrowheadDrag)
+                .on("end", () => {
+                    calculateBreakPoints();
+                }));
+
+    function onVertexDrag(event, d) {
+        // Update the vertex position
+        d.x = event.x;
+        d.y = event.y;
+
+        // Update circle position
+        d3.select(this)
+            .attr("cx", d.x)
+            .attr("cy", d.y);
+
+        // Update corresponding vector
+        svg.selectAll(".arrow")
+            .data(vertices)
+            .attr("x1", d => d.x)
+            .attr("y1", d => d.y)
+            .attr("x2", d => d.x + d.vx)
+            .attr("y2", d => d.y + d.vy);
+
+        svg.selectAll(".arrowhead-circ")
+            .data(vertices)
+            .attr("cx", d => d.x + d.vx)
+            .attr("cy", d => d.y + d.vy);
+    }
+
+    function onArrowheadDrag(event, d) {
+        // Calculate new vector components based on arrowhead position
+        d.vx = event.x - d.x + dragOffset.x;
+        d.vy = event.y - d.y + dragOffset.y;
+
+        // Update the arrow line to match new vector
+        svg.selectAll(".arrow")
+            .data(vertices)
+            .attr("x2", d => d.x + d.vx)
+            .attr("y2", d => d.y + d.vy);
+
+        // Update arrowhead position
+        d3.select(this)
+            .attr("cx", d.x + d.vx)
+            .attr("cy", d.y + d.vy);
+        updateColors();
+        calculateBreakPoints();
+        isCriticalPointInTriangle(vertices);
+    }
+
+    function updateTriangle() {
+        // Redraw the triangle
+        circleVertices = JSON.parse(JSON.stringify(vertices))
+		circleVertices.push(vertices[0]);
+        triangle.attr("d", line(circleVertices));
+        updateColors();
+        isCriticalPointInTriangle(vertices);
+        calculateBreakPoints();
+    }
+    updateColors();
+    isCriticalPointInTriangle(vertices);
+    calculateBreakPoints();
+</script>
+</body>
+</html>
+
