@@ -27,7 +27,7 @@ main:
     url: /cv/
     
   - title: "Visual"
-    url: /files/index.html/
+    url: /files/index.html
     
   - title: "Guide"
     url: /markdown/
