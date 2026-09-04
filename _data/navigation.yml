@@ -26,8 +26,11 @@ main:
   - title: "CV"
     url: /cv/
     
-  - title: "Visual"
+  - title: "2D Breakpoint Visual"
     url: /files/index.html
     
-  - title: "Guide"
-    url: /markdown/
+
+  - title: "About"
+    url: /about/
+  # - title: "Guide"
+  #   url: /markdown/

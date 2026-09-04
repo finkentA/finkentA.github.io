@@ -4,19 +4,19 @@ title: "About"
 permalink: /about/
 ---
 
-<img src="/images/serve.jpg" alt="Tanner Serving" style="width: 150px; float: right; margin: 0 0 1em 1em; border-radius: 50%;"/>
+<img src="/images/Serve.JPG" alt="Tanner Serving" style="width: 150px; float: right; margin: 0 0 1em 1em; border-radius: 50%;"/>
 
 ## About Me
 
 I am a PhD student in the Department of Computer Science at the University of Arizona, working under the supervision of Dr. Joshua A. Levine. My research focuses on Data Visualization algorithms processing field data(mainly Vector Fields), with applications across various domains using fluid flow, blood flow, and magnetic field data.
 
-I am particularly interested in obtaining an improved discrete representation, and my current projects involve subdivision of input mesh and extensions to 3D.
+I am particularly interested in obtaining an improved discrete representation, and my current projects involve refinement of input mesh and extensions to 3D.
 
 Prior to starting my PhD, I completed my Bachelor's at Central College.
 
 ---
 
-## Research Interests
+## Primary Research Interests
 
 - Topological Data Analysis
 - Discrete Morse Theory
@@ -33,6 +33,9 @@ Prior to starting my PhD, I completed my Bachelor's at Central College.
 
 ## Honors and Awards
 
+- Undergraduate Dean's List all semesters
+- National Society of Leadership and Success
+- Henry W. Pietonpol Award (Central College)
 - SIGSOFT CAPS AWARD FSE 2025
 
 ---
